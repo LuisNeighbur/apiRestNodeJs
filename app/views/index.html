@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="utf-8" />
+	<title>Document</title>
+	<script>
+		window.me = {
+		  "id": "828680333833080",
+		  "name": "Luis Neighbur",
+		  "birthday": "10/15/1990",
+		  "email": "shaggi666@hotmail.com",
+		  "picture": "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-xap1/v/t1.0-1/p50x50/10629851_823324861035294_1119847225285809619_n.jpg?oh=ec789ec84e547c4ce1eb66c0cbab4553&oe=5498954D&__gda__=1418993531_2ec106ce502bd84302dc3c20e733fb3d",
+		  "token": "CAAU08uZA6AgABAMs4J8qFP7A91rcXmTXeOsSgaiw2ed2PMyG4Owk7FruVRNLTpUvgVUNm9dept5re6ezgs0EBwktIDImMh4DNfbkZBbJunxJ3i7BE828dQkwx1e3S9i2enBX1CLfMJrwbozmS3wcC2LZAhBBtCZAV9blqzxheKe5dmnq8GBXFgn4uwDE5bOTYxQRkymctfqJy4je7ISC"
+		};
+	</script>
+	<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+</head>
+<body>
+	<button id="log-in">Login with Facebook</button>
+	<div style="width:320px" id="profile">
+		<div id="name"></div>
+		<div id="birthday"></div>
+		<img id="picture" />
+		<div id="email"></div>
+		<div id="token"></div>
+		<div id="timeline"></div>
+	</div>
+</body>
+<script>
+	$('#log-in').on('click', function(){
+		$.post('/sing-in', {id: me.id},
+		function (obj_user){
+			console.log(typeof(obj_user));
+			$('#log-in').hide();
+			$('#name').html(obj_user.name);
+			$('#birthday').html(obj_user.birthday);
+			$('#picture').attr('src',obj_user.picture);
+			$('#email').html(obj_user.email);
+			$('#token').html(obj_user.token);
+			if(typeof(obj_user)!=="object"){
+				$.post('/sing-up', me, function (data){
+					console.log(data);
+				});
+			}else{
+				$.get('/api/posts',function (data){
+					for(i in data){
+						console.log(data[i]);
+					}
+				});
+			}
+		});
+	});
+</script>
+</html>
