@@ -20,6 +20,7 @@ app.set('view engine', 'html');
 app.set('views', __dirname + '/app/views');
 app.set('view cache', false);
 swig.setDefaults({ cache: false });
+app.use(express.static(__dirname + '/public'));
 var port = process.env.PORT || 3030;
 
 var apiController = require('./app/controllers/api');

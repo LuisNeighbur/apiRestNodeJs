@@ -3,6 +3,12 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Document</title>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+	<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 	<script>
 		window.me = {
 		  "id": "100000733623491",
@@ -13,20 +19,56 @@
 		  "token": "CAAU08uZA6AgABAMs4J8qFP7A91rcXmTXeOsSgaiw2ed2PMyG4Owk7FruVRNLTpUvgVUNm9dept5re6ezgs0EBwktIDImMh4DNfbkZBbJunxJ3i7BE828dQkwx1e3S9i2enBX1CLfMJrwbozmS3wcC2LZAhBBtCZAV9blqzxheKe5dmnq8GBXFgn4uwDE5bOTYxQRkymctfqJy4je7ISC"
 		};
 	</script>
-	<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+	
 </head>
 <body>
-	<button id="log-in">Login with Facebook</button>
-	<div style="width:320px" id="profile">
-		<div id="name"></div>
-		<div id="birthday"></div>
-		<img id="picture" />
-		<div id="email"></div>
-		<div id="token"></div>
-		<div id="timeline"></div>
-	</div>
+	<button id="log-in" class="btn btn-default">Login with Facebook</button>
+	<section class="container">
+		<section class="col-xs-2">
+			<div id="name"></div>
+			<div id="birthday"></div>
+			<img id="picture" />
+			<div id="email"></div>
+			<div id="token"></div>
+		</section>
+		<section class="col-xs-10">
+			<section>
+				<form id="publish" class="hidden">
+					<textarea class="form-control" name="body"></textarea>
+					<input type="hidden" name="position" value="-32.2793578,-58.07445" />
+					<input type="hidden" name="uid" value="100000733623491" />
+					<input class="btn btn-primary" type="submit" value="Pulsear" /> 
+				</form>
+			</section>
+			<section id="timeline"></section>
+		</section>
+	</section>
 </body>
 <script>
+	function newPost(data){
+		var article = $('<div>').addClass('bg-primary');
+		var colOne = $('<div>').addClass('col-xs-1');
+		var colTwo = $('<div>').addClass('col-xs-11');
+		var image = $('<img>').attr('src', data.user_id.picture);
+		var userID = $("<div>").html(data.user_id.name);
+		var content = $('<div>').html(data.body);
+		var date = $('<div>').html(new Date(data.date).toTimeString());
+		var position = $('<div>').html(data.position);
+		colOne.append(image);
+		colTwo.append(userID)
+		.append(content)
+		.append(date)
+		.append(position);
+		article.append(colOne).append(colTwo);
+		$('#timeline').append(article.append($('<div class="clearfix"></div>')));
+	}
+	function getTimeline(){
+		$.get('/api/posts',function (data){
+					for(i in data){
+						newPost(data[i]);
+					}
+				});
+	}
 	$('#log-in').on('click', function(){
 		$.post('/sing-in', {id: me.id},
 		function (obj_user){
@@ -40,19 +82,19 @@
 					console.log(data);
 				});
 			}else{
-				$.get('/api/posts',function (data){
-					for(i in data){
-						var userID = $("<h3>").html(data[i].user_id.name);
-						var content = $('<div>').html(data[i].body);
-						var date = $('<div>').html(new Date(data[i].date).toTimeString());
-						var position = $('<div>').html(data[i].position);
-						$('#timeline')
-						.append(userID)
-						.append(content)
-						.append(date)
-						.append(position);
-					}
+				getTimeline();
+				$('#publish')
+				.removeClass('hidden')
+				.addClass('show')
+				.on('submit', function (e){
+					e.preventDefault();
+					$.post('/api/posts', $('#publish').serialize(),function (data){
+						$.get('/api/posts/' + data._id, function (data){
+							newPost(data);
+						})	
+					});
 				});
+
 			}
 		});
 	});

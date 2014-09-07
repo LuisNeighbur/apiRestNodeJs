@@ -3,6 +3,9 @@ var homeController = function (app){
 	app.get('/', function (req, res){
 		res.render('index');
 	});
+	app.get('/test', function (req, res){
+		res.render('test')
+	});
 	app.post('/sing-up', function (req, res){
 		var body = req.body;
 		if(!body.id || 

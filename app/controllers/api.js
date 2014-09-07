@@ -30,13 +30,15 @@ router.route('/posts')
 		post.save(function (err){
 			if(err)
 				res.send(err);
-			res.json({ message: 'Post created!' });
+			res.json(post);
 		})
 	});
 });
 router.route('/posts/:post_id')
 	.get(function(req, res) {
-		Post.findById(req.params.post_id, function(err, post) {
+		Post.findById(req.params.post_id)
+		.populate('user_id')
+		.exec(function(err, post) {
 			if (err)
 				res.send(err);
 			res.json(post);
