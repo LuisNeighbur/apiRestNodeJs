@@ -5,7 +5,7 @@
 	<title>Document</title>
 	<script>
 		window.me = {
-		  "id": "828680333833080",
+		  "id": "100000733623491",
 		  "name": "Luis Neighbur",
 		  "birthday": "10/15/1990",
 		  "email": "shaggi666@hotmail.com",
@@ -30,13 +30,11 @@
 	$('#log-in').on('click', function(){
 		$.post('/sing-in', {id: me.id},
 		function (obj_user){
-			console.log(typeof(obj_user));
 			$('#log-in').hide();
 			$('#name').html(obj_user.name);
 			$('#birthday').html(obj_user.birthday);
 			$('#picture').attr('src',obj_user.picture);
 			$('#email').html(obj_user.email);
-			$('#token').html(obj_user.token);
 			if(typeof(obj_user)!=="object"){
 				$.post('/sing-up', me, function (data){
 					console.log(data);
@@ -44,7 +42,15 @@
 			}else{
 				$.get('/api/posts',function (data){
 					for(i in data){
-						console.log(data[i]);
+						var userID = $("<h3>").html(data[i].user_id.name);
+						var content = $('<div>').html(data[i].body);
+						var date = $('<div>').html(new Date(data[i].date).toTimeString());
+						var position = $('<div>').html(data[i].position);
+						$('#timeline')
+						.append(userID)
+						.append(content)
+						.append(date)
+						.append(position);
 					}
 				});
 			}
