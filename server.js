@@ -25,11 +25,12 @@ app.disable('x-powered-by');
 swig.setDefaults({ cache: false });
 app.use(express.static(__dirname + '/public'));
 var port = process.env.PORT || 3030;
-
 var apiController = require('./app/controllers/api');
 var homeController = require('./app/controllers/app');
+var userController = require('./app/controllers/user')
 apiController(app,express);
 homeController(app);
+userController(app,express);
 app.listen(port,function(){
 	console.log("Servidor esuchando en el puerto " + port);
 });

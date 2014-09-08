@@ -1,4 +1,3 @@
-
 var apiController = function (app,express){
 var Post = require('../models/post');
 var User = require('../models/user');
@@ -23,18 +22,22 @@ router.route('/posts')
   	});
 })
 .post(function (req, res){
-	User.findOne({ uid:req.body.uid }, function (err, user){
+	User.findOne({ uid:req.session.user.uid }, function (err, user){
 		if(err)
 			res.send(err);
-		var post = new Post();
-		post.body = req.body.body;
-		post.position = req.body.position;
-		post.user_id = user;
-		post.save(function (err){
-			if(err)
-				res.send(err);
-			res.json(post);
-		})
+		if(req.body.body.length>0){
+			var post = new Post();
+			post.body = req.body.body;
+			post.position = req.body.position;
+			post.user_id = user;
+			post.save(function (err){
+				if(err)
+					res.send(err);
+				res.json(post);
+			});
+		}else{
+			res.send('None')
+		}
 	});
 });
 router.route('/posts/:post_id')

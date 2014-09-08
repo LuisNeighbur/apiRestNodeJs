@@ -22,18 +22,14 @@
 		font-size: 11px;
 		font-weight: bold;
 	}
+	body{
+		background-color: #e9eaed;
+	}
 	</style>
 	<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 	<script>
-		window.me = {
-		  "id": "100000733623491",
-		  "name": "Luis Neighbur",
-		  "birthday": "10/15/1990",
-		  "email": "shaggi666@hotmail.com",
-		  "picture": "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-xap1/v/t1.0-1/p50x50/10629851_823324861035294_1119847225285809619_n.jpg?oh=ec789ec84e547c4ce1eb66c0cbab4553&oe=5498954D&__gda__=1418993531_2ec106ce502bd84302dc3c20e733fb3d",
-		  "token": "CAAU08uZA6AgABAMs4J8qFP7A91rcXmTXeOsSgaiw2ed2PMyG4Owk7FruVRNLTpUvgVUNm9dept5re6ezgs0EBwktIDImMh4DNfbkZBbJunxJ3i7BE828dQkwx1e3S9i2enBX1CLfMJrwbozmS3wcC2LZAhBBtCZAV9blqzxheKe5dmnq8GBXFgn4uwDE5bOTYxQRkymctfqJy4je7ISC"
-		};
+		window.me = {};
 	</script>
 	<script type="text/javascript">
 	function statusChangeCallback(response) {
@@ -85,12 +81,16 @@
 				.addClass('show')
 				.on('submit', function (e){
 					e.preventDefault();
-					$.post('/api/posts', $('#publish').serialize(),function (data){
-						$.get('/api/posts/' + data._id, function (data){
-							newPost(data);
-						})	
-					});
-					$('textarea[name^=body]').val('')
+					if($('#body').val().length <= 0){
+						alert('Tu estado esta vacio');
+					}else{
+						$.post('/api/posts', $('#publish').serialize(),function (data){
+							$.get('/api/posts/' + data._id, function (data){
+								newPost(data);
+								$('textarea[name^=body]').val('')
+							})	
+						});
+					}
 				});
 			}
 		});
@@ -128,9 +128,8 @@
 		<section class="col-xs-10">
 			<section>
 				<form id="publish" class="hidden">
-					<textarea class="form-control" name="body"></textarea>
+					<textarea class="form-control" id="body" name="body"></textarea>
 					<input type="hidden" name="position" value="-32.2793578,-58.07445" />
-					<input type="hidden" name="uid" value="100000733623491" />
 					<input class="btn btn-primary" type="submit" value="Pulsear" /> 
 				</form>
 			</section>
@@ -152,14 +151,17 @@
 		//
 	}
 	function newPost(data){
-		var article = $('<div>').addClass('bg-primary').attr('id',data._id);
+		var article = $('<div>')
+		.addClass('bg-primary')
+		.attr('id',data._id)
+		.css({ 'margin-top': '10px' });
 		var colOne = $('<div>').addClass('col-xs-1');
 		var colTwo = $('<div>').addClass('col-xs-11');
 		var image = $('<img>').attr('src', data.user_id.picture);
 		var userID = $("<div>").html('<strong>' + data.user_id.name + '</strong><button type="button" class="close" onclick="rmPost(this)"  data-puls-id="' + data._id + '"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>');
 		var content = $('<div>').html(data.body);
 		var date = $('<div>').html('<small>' + 
-			new Date(data.date).toTimeString() + ' | ' + data.position +
+			new Date(data.date).toString() + ' | ' + data.position +
 			'</small>');
 		colOne.append(image);
 		colTwo.append(userID)
