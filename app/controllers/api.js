@@ -4,18 +4,21 @@ var Post = require('../models/post');
 var User = require('../models/user');
 var router = express.Router();
 router.use(function (req, res , next){
-	if(!req.session.user)
-		next(new Error('An error has ocurred'))
+	if(!req.session.user){
+		res.status(403);
+		next('Forbiden');
+	}else{
+		next();
+	}
 	console.log('Something is happening.');
-	next();
 });
 router.route('/posts')
 .get(function (req, res){
 	Post
 	.find({})
 	.populate('user_id')
-	.exec(function(error, groups) {
-    	console.log(groups)
+	.exec(function (error, groups) {
+
     	res.json(groups)
   	});
 })
@@ -54,7 +57,6 @@ router.route('/posts/:post_id')
 				post.body = req.body.body;
 				post.date_update = req.body.date;
 				post.user_id = user;
-				console.log(post.user_id,user)
 				post.save(function(err) {
 					if (err)
 						res.send(err);
@@ -70,7 +72,7 @@ router.route('/posts/:post_id')
 		}, function(err, post) {
 			if (err)
 				res.send(err);
-			res.json({ message: 'Successfully deleted' });
+			res.json(post);
 		});
 	});
 

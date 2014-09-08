@@ -5,6 +5,7 @@ var RedisStore = require('connect-redis');
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
 var swig = require('swig');
+var favicon = require('serve-favicon');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(session({
@@ -15,10 +16,12 @@ app.use(session({
 	}),
 	secret: 'lolcatz'
 }));
+app.use(favicon(__dirname + '/public/favicon.ico'))
 app.engine('html', swig.renderFile);
 app.set('view engine', 'html');
 app.set('views', __dirname + '/app/views');
 app.set('view cache', false);
+app.disable('x-powered-by');
 swig.setDefaults({ cache: false });
 app.use(express.static(__dirname + '/public'));
 var port = process.env.PORT || 3030;

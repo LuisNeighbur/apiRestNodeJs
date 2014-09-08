@@ -3,10 +3,26 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Document</title>
+	<link rel="shorcut icon" href="favicon.ico" />
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 	<!-- Optional theme -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+	<style type="text/css">
+	#log-in{
+		-moz-user-select: none;
+	    background: #2A49A5;
+	    border: 1px solid #082783;
+	    box-shadow: 0 1px #4C6BC7 inset;
+	    color: white;
+	    padding: 3px 5px;
+	    text-decoration: none;
+	    text-shadow: 0 -1px 0 #082783;
+	    font-family: 'lucida grande',tahoma,verdana,arial,sans-serif;
+		font-size: 11px;
+		font-weight: bold;
+	}
+	</style>
 	<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 	<script>
@@ -19,10 +35,88 @@
 		  "token": "CAAU08uZA6AgABAMs4J8qFP7A91rcXmTXeOsSgaiw2ed2PMyG4Owk7FruVRNLTpUvgVUNm9dept5re6ezgs0EBwktIDImMh4DNfbkZBbJunxJ3i7BE828dQkwx1e3S9i2enBX1CLfMJrwbozmS3wcC2LZAhBBtCZAV9blqzxheKe5dmnq8GBXFgn4uwDE5bOTYxQRkymctfqJy4je7ISC"
 		};
 	</script>
+	<script type="text/javascript">
+	function statusChangeCallback(response) {
+	    console.log('statusChangeCallback');
+	    console.log(response);
+	    // The response object is returned with a status field that lets the
+	    // app know the current login status of the person.
+	    // Full docs on the response object can be found in the documentation
+	    // for FB.getLoginStatus().
+	    me.token = response.authResponse.accessToken;
+	    if (response.status === 'connected') {
+	    	console.log('Welcome!  Fetching your information.... ');
+		    FB.api('/me', function (response) {
+		      console.log(response);
+		      me.id = response.id;
+		      me.email = response.email;
+		      me.birthday = response.birthday;
+		      me.name = response.name;
+		      FB.api('/me/picture', function (response){
+		      	console.log(response);
+		      	me.picture = response.data.url;
+		      	login();
+		      })
+		    });	      
+	    }
+	  }
+	function checkLoginState() {
+		FB.getLoginStatus(function(response) {
+      		statusChangeCallback(response);
+	    });
+	}
+	function login(){
+		$.post('/sing-in', {id: me.id},
+		function (obj_user){
+			$('fb:login-button').hide();
+			$('#name').html(obj_user.name);
+			$('#birthday').html(obj_user.birthday);
+			$('#picture').attr('src',obj_user.picture);
+			$('#email').html(obj_user.email);
+			if(typeof(obj_user)!=="object"){
+				$.post('/sing-up', me, function (data){
+					console.log(data);
+					login();
+				});
+			}else{
+				getTimeline();
+				$('#publish')
+				.removeClass('hidden')
+				.addClass('show')
+				.on('submit', function (e){
+					e.preventDefault();
+					$.post('/api/posts', $('#publish').serialize(),function (data){
+						$.get('/api/posts/' + data._id, function (data){
+							newPost(data);
+						})	
+					});
+					$('textarea[name^=body]').val('')
+				});
+			}
+		});
+	}
+	 window.fbAsyncInit = function() {
+	  FB.init({
+	    appId      : '301863476666236',
+	    cookie     : true,  // enable cookies to allow the server to access 
+	                        // the session
+	    xfbml      : true,  // parse social plugins on this page
+	    version    : 'v2.1' // use version 2.1
+	  });
+	};
+	(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
 	
+	</script>
 </head>
 <body>
-	<button id="log-in" class="btn btn-default">Login with Facebook</button>
+	<fb:login-button scope="public_profile,email,user_birthday" onlogin="checkLoginState();">
+	</fb:login-button>
 	<section class="container">
 		<section class="col-xs-2">
 			<div id="name"></div>
@@ -45,58 +139,41 @@
 	</section>
 </body>
 <script>
+	function rmPost(obj){
+		var id = $(obj).data('puls-id');
+		$.ajax({
+			url: '/api/posts/' + id,
+			method: 'DELETE'
+		}).done(function (e){
+			if (e==1) {
+				$('#' + id).remove();
+			};
+		})
+		//
+	}
 	function newPost(data){
-		var article = $('<div>').addClass('bg-primary');
+		var article = $('<div>').addClass('bg-primary').attr('id',data._id);
 		var colOne = $('<div>').addClass('col-xs-1');
 		var colTwo = $('<div>').addClass('col-xs-11');
 		var image = $('<img>').attr('src', data.user_id.picture);
-		var userID = $("<div>").html(data.user_id.name);
+		var userID = $("<div>").html('<strong>' + data.user_id.name + '</strong><button type="button" class="close" onclick="rmPost(this)"  data-puls-id="' + data._id + '"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>');
 		var content = $('<div>').html(data.body);
-		var date = $('<div>').html(new Date(data.date).toTimeString());
-		var position = $('<div>').html(data.position);
+		var date = $('<div>').html('<small>' + 
+			new Date(data.date).toTimeString() + ' | ' + data.position +
+			'</small>');
 		colOne.append(image);
 		colTwo.append(userID)
 		.append(content)
-		.append(date)
-		.append(position);
+		.append(date);
 		article.append(colOne).append(colTwo);
 		$('#timeline').append(article.append($('<div class="clearfix"></div>')));
 	}
 	function getTimeline(){
 		$.get('/api/posts',function (data){
-					for(i in data){
-						newPost(data[i]);
-					}
-				});
-	}
-	$('#log-in').on('click', function(){
-		$.post('/sing-in', {id: me.id},
-		function (obj_user){
-			$('#log-in').hide();
-			$('#name').html(obj_user.name);
-			$('#birthday').html(obj_user.birthday);
-			$('#picture').attr('src',obj_user.picture);
-			$('#email').html(obj_user.email);
-			if(typeof(obj_user)!=="object"){
-				$.post('/sing-up', me, function (data){
-					console.log(data);
-				});
-			}else{
-				getTimeline();
-				$('#publish')
-				.removeClass('hidden')
-				.addClass('show')
-				.on('submit', function (e){
-					e.preventDefault();
-					$.post('/api/posts', $('#publish').serialize(),function (data){
-						$.get('/api/posts/' + data._id, function (data){
-							newPost(data);
-						})	
-					});
-				});
-
+			for(i in data){
+				newPost(data[i]);
 			}
 		});
-	});
+	}
 </script>
 </html>

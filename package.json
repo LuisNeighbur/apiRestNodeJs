@@ -7,6 +7,7 @@
     "express": "~4.0.0",
     "express-session": "^1.7.6",
     "mongoose": "~3.6.13",
+    "serve-favicon": "^2.1.2",
     "socket.io": "^1.1.0",
     "swig": "^1.4.2"
   }
