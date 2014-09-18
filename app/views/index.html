@@ -33,27 +33,23 @@
 	</script>
 	<script type="text/javascript">
 	function statusChangeCallback(response) {
-	    console.log('statusChangeCallback');
 	    console.log(response);
-	    // The response object is returned with a status field that lets the
-	    // app know the current login status of the person.
-	    // Full docs on the response object can be found in the documentation
-	    // for FB.getLoginStatus().
-	    me.token = response.authResponse.accessToken;
 	    if (response.status === 'connected') {
 	    	console.log('Welcome!  Fetching your information.... ');
-		    FB.api('/me', function (response) {
-		      console.log(response);
-		      me.id = response.id;
-		      me.email = response.email;
-		      me.birthday = response.birthday;
-		      me.name = response.name;
-		      FB.api('/me/picture', function (response){
+		    FB.api('/me', function (res) {
+		    	objResponse = {
+		      		id = res.id;
+		      		email = res.email;
+		      		birthday = res.birthday;
+		      		name = res.name; 
+		       		token = response.authResponse.accessToken;
+		      	}
+		      FB.api('/me/picture', function (res){
 		      	console.log(response);
-		      	me.picture = response.data.url;
-		      	login();
+		      	objResponse.picture = response.data.url;
+		      	pulse.login(objResponse);
 		      })
-		    });	      
+		    });
 	    }
 	  }
 	function checkLoginState() {
@@ -115,8 +111,10 @@
 	</script>
 </head>
 <body>
+	<div id="login-button">
 	<fb:login-button scope="public_profile,email,user_birthday" onlogin="checkLoginState();">
 	</fb:login-button>
+	</div>
 	<section class="container">
 		<section class="col-xs-2">
 			<div id="name"></div>
@@ -142,7 +140,7 @@
 		var id = $(obj).data('puls-id');
 		$.ajax({
 			url: '/api/posts/' + id,
-			method: 'DELETE'
+			type: 'DELETE'
 		}).done(function (e){
 			if (e==1) {
 				$('#' + id).remove();

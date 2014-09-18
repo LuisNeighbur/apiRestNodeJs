@@ -8,13 +8,14 @@ var swig = require('swig');
 var favicon = require('serve-favicon');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+var config = require('./app/config')
 app.use(session({
 	store: new RedisStore({
-		host: 'pub-redis-13443.us-east-1-3.4.ec2.garantiadata.com',
-		port: 13443,
-		pass: 'redistest'
+		host: config.redis.host,
+		port: config.redis.port,
+		pass: config.redis.pass
 	}),
-	secret: 'lolcatz'
+	secret: config.secret
 }));
 app.use(favicon(__dirname + '/public/favicon.ico'))
 app.engine('html', swig.renderFile);
